@@ -1,21 +1,30 @@
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 
 public class FindFrequencyOfWord {
 
     public static void main(String[] args) {
+        String string = "Paranoids are not paranoid because they are paranoid but because they keep putting themselves" +
+                "deliberately into paranoid avoidable situations";
 
-        String string ="To be or not to be";
-        char[] array = string.toCharArray();
-        HashMap<Character, Integer> hashMap = new HashMap<>();
+        ConcurrentMap<String, Integer> freqMap =
+                asList(string.split("[\\s.]"))
+                        .parallelStream()
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toConcurrentMap(w -> w.toLowerCase(), w -> 1, Integer::sum));
+        System.out.println(freqMap.toString());
 
-        for (char c : array) {
-            if (hashMap.containsKey(c)) {
-                int count = hashMap.get(c);
-                hashMap.put(c, count + 1);
-            } else {
-                hashMap.put(c, 1);
+        //Priority queue that uses frequency as the comparator and size as 3
+        PriorityQueue<String> pq = new PriorityQueue<>(Comparator.comparingInt(freqMap::get));
+        for (String key : freqMap.keySet()) {
+            pq.add(key);
+            if (pq.size() > 3) {
+                pq.poll();
             }
         }
-        System.out.println(hashMap);
     }
 }
